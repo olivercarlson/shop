@@ -8,5 +8,10 @@ exports.getLogin = (req, res) => {
 
 exports.postLogin = (req, res) => {
 	req.session.isLoggedIn = true;
+	req.session.user = {
+		test: '123',
+		hi: '456',
+	};
+	console.log(req.session);
 	res.redirect('/');
 };

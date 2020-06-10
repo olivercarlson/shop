@@ -8,7 +8,6 @@ exports.getIndex = (req, res) => {
 				prods: products,
 				pageTitle: 'Shop',
 				path: '/',
-				isLoggedIn: req.isLoggedIn,
 			});
 		})
 		.catch((err) => {
@@ -23,7 +22,6 @@ exports.getProducts = (req, res) => {
 				prods: products,
 				pageTitle: 'All Products',
 				path: '/products',
-				isLoggedIn: req.isLoggedIn,
 			});
 		})
 		.catch((err) => {
@@ -39,7 +37,6 @@ exports.getProduct = (req, res) => {
 				product,
 				pageTitle: product.title,
 				path: '/products',
-				isLoggedIn: req.isLoggedIn,
 			});
 		})
 		.catch((err) => console.log(err));
@@ -54,7 +51,6 @@ exports.getCart = (req, res) => {
 				path: '/cart',
 				pageTitle: 'Your Cart',
 				products: user.cart.items,
-				isLoggedIn: req.isLoggedIn,
 			});
 		})
 		.catch((err) => console.log(err));
@@ -91,7 +87,7 @@ exports.postOrder = (req, res) => {
 			});
 			const order = new Order({
 				user: {
-					name: req.user.name,
+					email: req.user.email,
 					userId: req.user._id,
 				},
 				products,
@@ -114,7 +110,6 @@ exports.getOrders = (req, res) => {
 				path: '/orders',
 				pageTitle: 'Your Orders',
 				orders,
-				isLoggedIn: req.isLoggedIn,
 			});
 		})
 		.catch((err) => console.log(err));

@@ -1,7 +1,6 @@
 const path = require('path');
 
 const express = require('express');
-const bodyParser = require('body-parser');
 const mongoose = require('mongoose');
 const session = require('express-session');
 const MongoDBStore = require('connect-mongodb-session')(session);
@@ -10,7 +9,7 @@ const flash = require('connect-flash');
 
 const errorController = require('./controllers/error');
 const User = require('./models/user');
-const MONGODB_URI = require('./priv.js');
+const { MONGODB_URI } = require('./priv.js');
 
 const app = express();
 const store = new MongoDBStore({
@@ -26,7 +25,7 @@ const adminRoutes = require('./routes/admin');
 const shopRoutes = require('./routes/shop');
 const authRoutes = require('./routes/auth');
 
-app.use(bodyParser.urlencoded({ extended: false }));
+app.use(express.urlencoded({ extended: true }));
 app.use(express.static(path.join(__dirname, 'public')));
 app.use(session({ secret: 'my secret', resave: false, saveUninitialized: false, store }));
 app.use(csrfProtection);
@@ -36,6 +35,7 @@ app.use((req, res, next) => {
 	if (!req.session.user) {
 		return next();
 	}
+	// Append Mongoose magic methods to all req.user requests (note: NOT req.session.user - that is a vanilla user object only.)
 	User.findById(req.session.user._id)
 		.then((user) => {
 			req.user = user;

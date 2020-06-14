@@ -7,7 +7,7 @@ const MongoDBStore = require('connect-mongodb-session')(session);
 const csrf = require('csurf');
 const flash = require('connect-flash');
 
-const errorController = require('./controllers/error');
+const { get404, get500 } = require('./controllers/error');
 const User = require('./models/user');
 const { MONGODB_URI } = require('./priv.js');
 
@@ -38,10 +38,15 @@ app.use((req, res, next) => {
 	// Append Mongoose magic methods to all req.user requests (note: NOT req.session.user - that is a vanilla user object only.)
 	User.findById(req.session.user._id)
 		.then((user) => {
+			if (!user) {
+				return next();
+			}
 			req.user = user;
 			next();
 		})
-		.catch((err) => console.log(err));
+		.catch((err) => {
+			throw new Error(err);
+		});
 });
 
 app.use((req, res, next) => {
@@ -54,7 +59,8 @@ app.use('/admin', adminRoutes);
 app.use(shopRoutes);
 app.use(authRoutes);
 
-app.use(errorController.get404);
+app.get('/500', get500);
+app.use(get404);
 
 mongoose
 	.connect(MONGODB_URI, {

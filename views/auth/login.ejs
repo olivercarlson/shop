@@ -23,14 +23,18 @@
       <div class="form-control">
         <label for="title">E-Mail</label>
         <input type="email"
+          class="<%= validationErrors.find(e => e.param === 'email') ? 'invalid': '' %>"
           id="email"
-          name="email">
+          name="email"
+          value="<%= oldInput.email %>">
       </div>
       <div class="form-control">
         <label for="password">Password</label>
         <input type="password"
+          class="<%= validationErrors.find(e => e.param === 'password') ? 'invalid': '' %>"
           name="password"
-          id="password">
+          id="password"
+          value="<%= oldInput.password %>">
       </div>
       <button class="btn"
         type="submit">Login</button>

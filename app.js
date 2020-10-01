@@ -13,7 +13,7 @@ const { MONGODB_URI } = require('./priv.js');
 
 const app = express();
 const store = new MongoDBStore({
-	uri: MONGODB_URI,
+	uri: process.env.MONGODB_URI || MONGODB_URI,
 	collection: 'sessions',
 });
 const csrfProtection = csrf();
@@ -63,7 +63,7 @@ app.get('/500', get500);
 app.use(get404);
 
 mongoose
-	.connect(MONGODB_URI, {
+	.connect(process.env.MONGODB_URI || MONGODB_URI, {
 		useNewUrlParser: true,
 		useUnifiedTopology: true,
 		useFindAndModify: false,

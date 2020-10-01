@@ -166,10 +166,9 @@ exports.getReset = (req, res) => {
 	});
 };
 
-exports.postReset = (req, res, next) => {
+exports.postReset = (req, res) => {
 	randomBytes(32, (err, buffer) => {
 		if (err) {
-			console.log(err);
 			return res.redirect('/reset');
 		}
 		const token = buffer.toString('hex');
@@ -182,9 +181,9 @@ exports.postReset = (req, res, next) => {
 				user.resetToken = token;
 				// expire token after one hour.
 				user.resetTokenExpiration = Date.now() + 3600000;
-				return user.save().then((result) => {
+				return user.save().then(() => {
 					res.redirect('/');
-					transporter.sendMail({
+					sgMail.send({
 						to: req.body.email,
 						from: 'simplenodeshop@gmail.com',
 						subject: 'Your Password Reset Request',
@@ -193,11 +192,11 @@ exports.postReset = (req, res, next) => {
 					});
 				});
 			})
-			.catch((err) => console.log(err));
+			.catch((error) => console.log(error));
 	});
 };
 
-exports.getNewPassword = (req, res, next) => {
+exports.getNewPassword = (req, res) => {
 	const { token } = req.params;
 	User.findOne({ resetToken: req.params.token, resetTokenExpiration: { $gt: Date.now() } })
 		.then((user) => {
@@ -218,7 +217,7 @@ exports.getNewPassword = (req, res, next) => {
 		.catch((err) => console.log(err));
 };
 
-exports.postNewPassword = (req, res, next) => {
+exports.postNewPassword = (req, res) => {
 	// extract new password
 	// find userId in DB
 	// update the userId password in the db.
@@ -238,7 +237,7 @@ exports.postNewPassword = (req, res, next) => {
 			resetUser.resetTokenExpiration = undefined;
 			return resetUser.save();
 		})
-		.then((result) => {
+		.then(() => {
 			res.redirect('/login');
 		})
 		.catch((err) => console.log(err));

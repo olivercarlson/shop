@@ -62,8 +62,6 @@ app.use(authRoutes);
 app.get('/500', get500);
 app.use(get404);
 
-console.log(`process.env.MONGODB_URI is ${process.env.MONGODB_URI}`);
-
 mongoose
 	.connect(process.env.MONGODB_URI, {
 		useNewUrlParser: true,
@@ -71,6 +69,6 @@ mongoose
 		useFindAndModify: false,
 	})
 	.then(() => {
-		app.listen(3000);
+		app.listen(process.env.PORT || 3000);
 	})
 	.catch((err) => console.log(err));

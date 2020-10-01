@@ -1,3 +1,4 @@
+require('dotenv').config();
 const path = require('path');
 
 const express = require('express');
@@ -9,11 +10,10 @@ const flash = require('connect-flash');
 
 const { get404, get500 } = require('./controllers/error');
 const User = require('./models/user');
-const { MONGODB_URI } = require('./priv.js');
 
 const app = express();
 const store = new MongoDBStore({
-	uri: process.env.MONGODB_URI || MONGODB_URI,
+	uri: process.env.MONGODB_URI,
 	collection: 'sessions',
 });
 const csrfProtection = csrf();
@@ -62,8 +62,10 @@ app.use(authRoutes);
 app.get('/500', get500);
 app.use(get404);
 
+console.log(`process.env.MONGODB_URI is ${process.env.MONGODB_URI}`);
+
 mongoose
-	.connect(process.env.MONGODB_URI || MONGODB_URI, {
+	.connect(process.env.MONGODB_URI, {
 		useNewUrlParser: true,
 		useUnifiedTopology: true,
 		useFindAndModify: false,

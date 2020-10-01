@@ -68,7 +68,7 @@ mongoose
 		useUnifiedTopology: true,
 		useFindAndModify: false,
 	})
-	.then((result) => {
+	.then(() => {
 		app.listen(3000);
 	})
 	.catch((err) => console.log(err));

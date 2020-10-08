@@ -4,7 +4,7 @@ const Order = require('../models/order');
 exports.getIndex = async (req, res, next) => {
 	try {
 		const products = await Product.find();
-		res.render('shop/index', {
+		return res.render('shop/index', {
 			prods: products,
 			pageTitle: 'Shop',
 			path: '/',
@@ -19,7 +19,7 @@ exports.getIndex = async (req, res, next) => {
 exports.getProducts = async (req, res, next) => {
 	try {
 		const products = await Product.find();
-		res.render('shop/product-list', {
+		return res.render('shop/product-list', {
 			prods: products,
 			pageTitle: 'All Products',
 			path: '/products',
@@ -35,7 +35,7 @@ exports.getProduct = async (req, res, next) => {
 	const prodId = req.params.productId;
 	try {
 		const product = await Product.findById(prodId);
-		res.render('shop/product-detail', {
+		return res.render('shop/product-detail', {
 			product,
 			pageTitle: product.title,
 			path: '/products',
@@ -50,7 +50,7 @@ exports.getProduct = async (req, res, next) => {
 exports.getCart = async (req, res, next) => {
 	try {
 		const user = await req.user.populate('cart.items.productId').execPopulate();
-		res.render('shop/cart', {
+		return res.render('shop/cart', {
 			path: '/cart',
 			pageTitle: 'Your Cart',
 			products: user.cart.items,
@@ -67,7 +67,7 @@ exports.postCart = async (req, res, next) => {
 	try {
 		const product = await Product.findById(prodId);
 		await req.user.addToCart(product);
-		res.redirect('/cart');
+		return res.redirect('/cart');
 	} catch (err) {
 		// TODO: add error handling here to flash users adding to cart failed.
 		const error = new Error(err);
@@ -80,7 +80,7 @@ exports.postCartDeleteProduct = async (req, res, next) => {
 	const prodId = req.body.productId;
 	try {
 		await req.user.removeFromCart(prodId);
-		res.redirect('/cart');
+		return res.redirect('/cart');
 	} catch (err) {
 		const error = new Error(err);
 		error.httpStatusCode = 500;

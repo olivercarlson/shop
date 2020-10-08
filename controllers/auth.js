@@ -17,7 +17,7 @@ exports.getLogin = (req, res) => {
 		message = null;
 	}
 
-	res.render('auth/login', {
+	return res.render('auth/login', {
 		pageTitle: 'Login',
 		path: '/login',
 		errorMessage: message,
@@ -36,7 +36,7 @@ exports.getSignup = (req, res) => {
 	} else {
 		message = null;
 	}
-	res.render('auth/signup', {
+	return res.render('auth/signup', {
 		path: '/signup',
 		pageTitle: 'Sign Up',
 		errorMessage: message,
@@ -178,7 +178,7 @@ exports.postReset = (req, res, next) => {
 			return res.redirect('/reset');
 		}
 		const token = buffer.toString('hex');
-		User.findOne({ email: req.body.email })
+		return User.findOne({ email: req.body.email })
 			.then((user) => {
 				if (!user) {
 					req.flash('error', 'No account with that email found');

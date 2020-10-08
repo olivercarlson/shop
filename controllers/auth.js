@@ -49,7 +49,7 @@ exports.getSignup = (req, res) => {
 	});
 };
 
-exports.postLogin = (req, res) => {
+exports.postLogin = (req, res, next) => {
 	const { email, password } = req.body;
 	const errors = validationResult(req);
 	if (!errors.isEmpty()) {
@@ -100,12 +100,14 @@ exports.postLogin = (req, res) => {
 				});
 			})
 			.catch((err) => {
-				console.log(err);
+				const error = new Error(err);
+				error.httpStatusCode = 500;
+				return next(error);
 			});
 	});
 };
 
-exports.postSignup = (req, res) => {
+exports.postSignup = (req, res, next) => {
 	const { email, password, confirmPassword } = req.body;
 	const errors = validationResult(req);
 	if (!errors.isEmpty()) {
@@ -125,23 +127,27 @@ exports.postSignup = (req, res) => {
 		})
 		.then(() => {
 			res.redirect('/login');
-			return sgMail
-				.send({
-					to: email,
-					from: 'simplenodeshop@gmail.com',
-					subject: 'Signup suceeded!',
-					html: '<h1> You successfully signed up!</h1>',
-				})
-				.then(
-					() => {},
-					(error) => {
-						console.error(error);
+			return sgMail.send({
+				to: email,
+				from: 'simplenodeshop@gmail.com',
+				subject: 'Signup suceeded!',
+				html: '<h1> You successfully signed up!</h1>',
+			});
+			// .then(
+			// 	() => {},
+			// 	(error) => {
+			// 		console.error(error);
 
-						if (error.response) {
-							console.error(error.response.body);
-						}
-					}
-				);
+			// 		if (error.response) {
+			// 			console.error(error.response.body);
+			// 		}
+			// 	}
+			// );
+		})
+		.catch((err) => {
+			const error = new Error(err);
+			error.httpStatusCode = 500;
+			return next(error);
 		});
 };
 
@@ -166,7 +172,7 @@ exports.getReset = (req, res) => {
 	});
 };
 
-exports.postReset = (req, res) => {
+exports.postReset = (req, res, next) => {
 	randomBytes(32, (err, buffer) => {
 		if (err) {
 			return res.redirect('/reset');
@@ -192,11 +198,15 @@ exports.postReset = (req, res) => {
 					});
 				});
 			})
-			.catch((error) => console.log(error));
+			.catch((err2) => {
+				const error = new Error(err2);
+				error.httpStatusCode = 500;
+				return next(error);
+			});
 	});
 };
 
-exports.getNewPassword = (req, res) => {
+exports.getNewPassword = (req, res, next) => {
 	const { token } = req.params;
 	User.findOne({ resetToken: req.params.token, resetTokenExpiration: { $gt: Date.now() } })
 		.then((user) => {
@@ -214,10 +224,14 @@ exports.getNewPassword = (req, res) => {
 				passwordToken: token,
 			});
 		})
-		.catch((err) => console.log(err));
+		.catch((err) => {
+			const error = new Error(err);
+			error.httpStatusCode = 500;
+			return next(error);
+		});
 };
 
-exports.postNewPassword = (req, res) => {
+exports.postNewPassword = (req, res, next) => {
 	// extract new password
 	// find userId in DB
 	// update the userId password in the db.
@@ -240,5 +254,9 @@ exports.postNewPassword = (req, res) => {
 		.then(() => {
 			res.redirect('/login');
 		})
-		.catch((err) => console.log(err));
+		.catch((err) => {
+			const error = new Error(err);
+			error.httpStatusCode = 500;
+			return next(error);
+		});
 };

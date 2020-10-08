@@ -8,7 +8,7 @@ const MongoDBStore = require('connect-mongodb-session')(session);
 const csrf = require('csurf');
 const flash = require('connect-flash');
 
-const { get404, get500 } = require('./controllers/error');
+const { get404 } = require('./controllers/error');
 const User = require('./models/user');
 
 const app = express();
@@ -32,6 +32,12 @@ app.use(csrfProtection);
 app.use(flash());
 
 app.use((req, res, next) => {
+	res.locals.isLoggedIn = req.session.isLoggedIn;
+	res.locals.csrfToken = req.csrfToken();
+	next();
+});
+
+app.use((req, res, next) => {
 	if (!req.session.user) {
 		return next();
 	}
@@ -45,14 +51,8 @@ app.use((req, res, next) => {
 			return next();
 		})
 		.catch((err) => {
-			throw new Error(err);
+			next(new Error(err));
 		});
-});
-
-app.use((req, res, next) => {
-	res.locals.isLoggedIn = req.session.isLoggedIn;
-	res.locals.csrfToken = req.csrfToken();
-	next();
 });
 
 app.use('/admin', adminRoutes);
@@ -61,8 +61,8 @@ app.use(authRoutes);
 
 app.use(get404);
 
-app.use((error, req, res) => {
-	res.redirect('/500');
+app.use((error, req, res, next) => {
+	res.status(500).render('500', { pageTitle: 'Internal Server Error', path: '/500', isLoggedIn: req.session.isLoggedIn });
 });
 
 mongoose

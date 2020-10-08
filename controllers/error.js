@@ -3,5 +3,5 @@ exports.get404 = (req, res) => {
 };
 
 exports.get500 = (req, res) => {
-	res.status(500).render('500', { pageTitle: 'Error', path: '/500', isLoggedIn: req.session.isLoggedIn });
+	res.status(500).render('500', { pageTitle: 'Internal Server Error', path: '/500', isLoggedIn: req.session.isLoggedIn });
 };

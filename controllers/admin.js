@@ -1,4 +1,4 @@
-const { check, validationResult } = require('express-validator');
+const { validationResult } = require('express-validator');
 const Product = require('../models/product');
 
 exports.getAddProduct = (req, res) => {
@@ -12,7 +12,7 @@ exports.getAddProduct = (req, res) => {
 	});
 };
 
-exports.postAddProduct = (req, res) => {
+exports.postAddProduct = async (req, res, next) => {
 	const { title, price, description, imageUrl } = req.body;
 	const product = new Product({ title, price, description, imageUrl, userId: req.user });
 	const errors = validationResult(req);
@@ -34,40 +34,44 @@ exports.postAddProduct = (req, res) => {
 		});
 	}
 
-	product
-		.save()
-		.then((result) => {
-			console.log('Created Product');
-			res.redirect('/admin/products');
-		})
-		.catch(() => res.redirect('/500'));
+	try {
+		await product.save();
+		return res.redirect('/admin/products');
+	} catch (err) {
+		const error = new Error(err);
+		error.httpStatusCode = 500;
+		return next(error);
+	}
 };
 
-exports.getEditProduct = (req, res) => {
+exports.getEditProduct = async (req, res, next) => {
 	const editMode = req.query.edit;
 	if (!editMode) {
 		return res.redirect('/');
 	}
 	const prodId = req.params.productId;
-	Product.findById(prodId)
-		.then((product) => {
-			if (!product) {
-				return res.redirect('/');
-			}
-			return res.render('admin/edit-product', {
-				pageTitle: 'Edit Product',
-				path: '/admin/edit-product',
-				editing: editMode,
-				product,
-				hasError: false,
-				errorMessage: null,
-				validationErrors: [],
-			});
-		})
-		.catch((err) => console.log(err));
+	try {
+		const product = await Product.findById(prodId);
+		if (!product) {
+			return res.redirect('/');
+		}
+		return res.render('admin/edit-product', {
+			pageTitle: 'Edit Product',
+			path: '/admin/edit-product',
+			editing: editMode,
+			product,
+			hasError: false,
+			errorMessage: null,
+			validationErrors: [],
+		});
+	} catch (err) {
+		const error = new Error(err);
+		error.httpStatusCode = 500;
+		return next(error);
+	}
 };
 
-exports.postEditProduct = (req, res) => {
+exports.postEditProduct = async (req, res, next) => {
 	const prodId = req.body.productId;
 	const { title, price, imageUrl, description } = req.body;
 	const errors = validationResult(req);
@@ -89,40 +93,48 @@ exports.postEditProduct = (req, res) => {
 			validationErrors: errors.array(),
 		});
 	}
-	Product.findById(prodId)
-		.then((product) => {
-			if (product.userId.toString() !== req.user._id.toString()) {
-				return res.redirect('/');
-			}
-			product.title = title;
-			product.price = price;
-			product.description = description;
-			product.imageUrl = imageUrl;
-			return product.save().then((result) => {
-				console.log('UPDATED PRODUCT!');
-				res.redirect('/admin/products');
-			});
-		})
-		.catch((err) => console.log(err));
+	try {
+		const product = await Product.findById(prodId);
+		if (product.userId.toString() !== req.user._id.toString()) {
+			return res.redirect('/');
+		}
+		product.title = title;
+		product.price = price;
+		product.description = description;
+		product.imageUrl = imageUrl;
+		return product.save().then(() => {
+			res.redirect('/admin/products');
+		});
+	} catch (err) {
+		const error = new Error(err);
+		error.httpStatusCode = 500;
+		return next(error);
+	}
 };
 
-exports.getProducts = (req, res) => {
-	Product.find({ userId: req.user._id })
-		.then((products) => {
-			return res.render('admin/products', {
-				prods: products,
-				pageTitle: 'Admin Products',
-				path: '/admin/products',
-			});
-		})
-		.catch((err) => console.log(err));
+exports.getProducts = async (req, res, next) => {
+	try {
+		const products = await Product.find({ userId: req.user._id });
+		return res.render('admin/products', {
+			prods: products,
+			pageTitle: 'Admin Products',
+			path: '/admin/products',
+		});
+	} catch (err) {
+		const error = new Error(err);
+		error.httpStatusCode = 500;
+		return next(error);
+	}
 };
 
-exports.postDeleteProduct = (req, res) => {
+exports.postDeleteProduct = async (req, res, next) => {
 	const prodId = req.body.productId;
-	Product.deleteOne({ _id: prodId, userId: req.user._id })
-		.then(() => {
-			return res.redirect('/admin/products');
-		})
-		.catch((err) => console.log(err));
+	try {
+		await Product.deleteOne({ _id: prodId, userId: req.user._id });
+		return res.redirect('/admin/products');
+	} catch (err) {
+		const error = new Error(err);
+		error.httpStatusCode = 500;
+		return next(error);
+	}
 };

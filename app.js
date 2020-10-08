@@ -36,13 +36,13 @@ app.use((req, res, next) => {
 		return next();
 	}
 	// Append Mongoose magic methods to all req.user requests (note: NOT req.session.user - that is a vanilla user object only.)
-	User.findById(req.session.user._id)
+	return User.findById(req.session.user._id)
 		.then((user) => {
 			if (!user) {
 				return next();
 			}
 			req.user = user;
-			next();
+			return next();
 		})
 		.catch((err) => {
 			throw new Error(err);
@@ -59,8 +59,11 @@ app.use('/admin', adminRoutes);
 app.use(shopRoutes);
 app.use(authRoutes);
 
-app.get('/500', get500);
 app.use(get404);
+
+app.use((error, req, res) => {
+	res.redirect('/500');
+});
 
 mongoose
 	.connect(process.env.MONGODB_URI, {
@@ -70,5 +73,6 @@ mongoose
 	})
 	.then(() => {
 		app.listen(process.env.PORT || 3000);
+		if (!process.env.PORT) console.log(`listening on 3000`);
 	})
 	.catch((err) => console.log(err));
